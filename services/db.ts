@@ -27,8 +27,6 @@ export const saveMediaItems = async (items: MediaItem[]): Promise<void> => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     
-    // Clear and re-save is simplest for this scale, 
-    // but in production we would upsert.
     items.forEach(item => {
       store.put(item);
     });
