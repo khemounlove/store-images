@@ -1,0 +1,7 @@
+{
+  "name": "Lumina Media Vault",
+  "description": "A high-end, responsive image and video storage application featuring AI-powered tagging, cloud-style organization, and a seamless light/dark mode experience.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
