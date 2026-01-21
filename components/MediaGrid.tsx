@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { MediaItem, MediaType } from '../types';
-import { IconHeart, IconVideo, IconPhotos } from './Icons';
+import { IconHeart, IconVideo, IconPhotos, IconFile } from './Icons';
 
 interface MediaGridProps {
   items: MediaItem[];
@@ -18,6 +17,16 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, onItemClick, onToggleFavor
       case 'medium': return 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6';
       case 'large': return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
     }
+  };
+
+  const getBrandStyles = (ext?: string) => {
+    const e = ext?.toLowerCase();
+    if (e === 'psd') return { bg: 'bg-blue-600', text: 'Ps', color: 'text-white' };
+    if (e === 'ai') return { bg: 'bg-orange-500', text: 'Ai', color: 'text-white' };
+    if (e === 'prproj' || e === 'pr') return { bg: 'bg-purple-700', text: 'Pr', color: 'text-white' };
+    if (e === 'aep' || e === 'ae') return { bg: 'bg-indigo-900', text: 'Ae', color: 'text-white' };
+    if (e === 'pdf') return { bg: 'bg-red-600', text: 'PDF', color: 'text-white' };
+    return { bg: 'bg-slate-200 dark:bg-slate-700', text: e?.toUpperCase() || 'FILE', color: 'text-slate-600 dark:text-slate-300' };
   };
 
   const groupItemsByDate = () => {
@@ -67,22 +76,21 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, onItemClick, onToggleFavor
               >
                 {item.type === MediaType.IMAGE ? (
                   <img 
-                    src={item.url} 
+                    src={item.url as string} 
                     alt={item.title} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                   />
-                ) : (
+                ) : item.type === MediaType.VIDEO ? (
                   <div className="relative w-full h-full bg-black">
                      <video 
-                        src={item.url} 
+                        src={item.url as string} 
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
                         muted 
                         loop 
                         autoPlay 
                         playsInline 
                       />
-                     {/* Play Indicator Overlay */}
                      <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
                           <svg className="w-5 h-5 text-white fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -91,6 +99,16 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, onItemClick, onToggleFavor
                      <div className="absolute top-3 right-3 p-1.5 bg-black/40 backdrop-blur-md rounded-lg">
                        <IconVideo className="w-3.5 h-3.5 text-white" />
                      </div>
+                  </div>
+                ) : (
+                  <div className={`w-full h-full flex flex-col items-center justify-center p-4 transition-all duration-300 ${getBrandStyles(item.extension).bg}`}>
+                    <div className={`text-2xl font-black mb-1 ${getBrandStyles(item.extension).color}`}>
+                      {getBrandStyles(item.extension).text}
+                    </div>
+                    <IconFile className={`w-8 h-8 opacity-50 ${getBrandStyles(item.extension).color}`} />
+                    <div className={`absolute top-3 right-3 p-1.5 bg-black/10 backdrop-blur-sm rounded-lg`}>
+                       <IconFile className="w-3.5 h-3.5 text-white" />
+                    </div>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -121,20 +139,13 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, onItemClick, onToggleFavor
             {activeTab === 'videos' ? <IconVideo className="w-12 h-12" /> : <IconPhotos className="w-12 h-12" />}
           </div>
           <h4 className="text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
-            {activeTab === 'videos' ? 'No Videos Stored' : 'Your vault is empty'}
+            {activeTab === 'videos' ? 'No Video' : 'Your vault is empty'}
           </h4>
           <p className="text-slate-500 dark:text-slate-400 font-medium px-8 max-w-sm mx-auto">
             {activeTab === 'videos' 
-              ? 'Click the + button to store your first video memory in the 8TB vault.' 
-              : 'Add photos and videos to see your timeline unfold.'}
+              ? 'Add video to your secure collection.' 
+              : 'Add files, photos and videos to see your gallery unfold.'}
           </p>
-          {activeTab === 'videos' && (
-            <div className="mt-8">
-              <span className="inline-block px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full">
-                Unlimited 8TB Storage Ready
-              </span>
-            </div>
-          )}
         </div>
       )}
     </div>

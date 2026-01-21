@@ -1,12 +1,12 @@
-
 export enum MediaType {
   IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO'
+  VIDEO = 'VIDEO',
+  DOCUMENT = 'DOCUMENT'
 }
 
 export interface MediaItem {
   id: string;
-  url: string;
+  url: string | Blob;
   type: MediaType;
   title: string;
   description?: string;
@@ -14,6 +14,8 @@ export interface MediaItem {
   isFavorite: boolean;
   createdAt: number;
   size?: string;
+  extension?: string;
+  originalFileName?: string;
 }
 
 export type TabType = 'library' | 'videos' | 'for-you' | 'favorites' | 'search' | 'settings';
