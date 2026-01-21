@@ -1,11 +1,22 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization to prevent issues if API_KEY is missing during build time
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  const key = process.env.API_KEY;
+  if (!key) return null;
+  if (!aiInstance) {
+    aiInstance = new GoogleGenAI({ apiKey: key });
+  }
+  return aiInstance;
+};
 
 export const analyzeMedia = async (base64Data: string, mimeType: string) => {
+  const ai = getAI();
+  if (!ai) return null;
+
   try {
-    // Fix: Using gemini-3-flash-preview as per the task type (vision/basic analysis) guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [
@@ -52,8 +63,10 @@ export const analyzeMedia = async (base64Data: string, mimeType: string) => {
 };
 
 export const getSmartGreeting = async () => {
+  const ai = getAI();
+  if (!ai) return "Your world, captured.";
+
   try {
-    // Fix: Using gemini-3-flash-preview for basic text generation task
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: "Generate a short, poetic 1-sentence greeting for a media vault app based on a 'Memories' theme. Keep it under 10 words.",
