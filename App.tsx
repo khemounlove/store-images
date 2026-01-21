@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { MediaItem, TabType, MediaType, AppSettings } from './types';
 import { IconPhotos, IconVideo, IconHeart, IconSearch, IconSettings, IconPlus } from './components/Icons';
@@ -114,8 +113,8 @@ const App: React.FC = () => {
             <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-1.5 opacity-80">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-              {activeTab === 'library' ? 'Timeline' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+              {activeTab === 'library' ? 'PICTURE' : activeTab.replace('-', ' ')}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -232,17 +231,14 @@ const App: React.FC = () => {
                    <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{storagePercentageDisplay}%</p>
                  </div>
                  
-                 {/* Enhanced Storage Bar */}
                  <div className="relative w-full h-6 bg-slate-100 dark:bg-slate-900/80 rounded-full overflow-hidden mb-8 ring-1 ring-slate-200/50 dark:ring-slate-700/50 shadow-inner group">
                    <div 
                     className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 transition-all duration-1000 ease-out relative" 
                     style={{ width: `${Math.max(0.5, rawPercentage)}%` }}
                    >
-                     {/* Glow effect for the occupied part */}
                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
                    </div>
                    
-                   {/* Marker for current position */}
                    {rawPercentage > 0 && (
                      <div 
                        className="absolute top-0 bottom-0 w-1 bg-white/40 shadow-sm transition-all duration-1000 ease-out"
