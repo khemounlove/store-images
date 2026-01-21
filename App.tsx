@@ -41,10 +41,16 @@ const App: React.FC = () => {
 
   // Sync state to IndexedDB when changed
   useEffect(() => {
-    if (isDBLoaded && mediaItems.length > 0) {
-      saveMediaItems(mediaItems).catch(console.error);
-      const newUsage = Math.min(STORAGE_CAPACITY_GB, Number((mediaItems.length * 0.05 + 0.1).toFixed(2)));
-      setSettings(s => ({...s, storageUsage: Number(newUsage)}));
+    if (isDBLoaded) {
+      if (mediaItems.length > 0) {
+        saveMediaItems(mediaItems).catch(console.error);
+      }
+      // Calculate realistic usage based on items: ~50MB per video, ~5MB per image avg
+      const usage = mediaItems.reduce((acc, item) => {
+        return acc + (item.type === MediaType.VIDEO ? 0.05 : 0.005);
+      }, 0.12); // Base system usage 120MB
+      
+      setSettings(s => ({...s, storageUsage: Number(usage.toFixed(4))}));
     }
   }, [mediaItems, isDBLoaded]);
 
@@ -80,7 +86,12 @@ const App: React.FC = () => {
     setMediaItems(prev => [...newItems, ...prev]);
   };
 
-  const storagePercentage = Math.round((settings.storageUsage / STORAGE_CAPACITY_GB) * 100 * 10) / 10;
+  // Precise percentage calculation for massive 8TB storage
+  const rawPercentage = (settings.storageUsage / STORAGE_CAPACITY_GB) * 100;
+  // If usage is very small, show more decimals to avoid 0.0%
+  const storagePercentageDisplay = rawPercentage < 0.01 
+    ? rawPercentage.toFixed(4) 
+    : rawPercentage.toFixed(2);
 
   const filteredItems = useMemo(() => {
     let items = [...mediaItems];
@@ -109,9 +120,12 @@ const App: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end gap-1">
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{storagePercentage}% of 8TB USED</span>
-               <div className="w-32 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                 <div className="h-full bg-blue-500" style={{ width: `${Math.max(1, storagePercentage)}%` }}></div>
+               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{storagePercentageDisplay}% of 8TB USED</span>
+               <div className="w-32 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                 <div 
+                   className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 transition-all duration-1000 ease-out" 
+                   style={{ width: `${Math.max(0.5, rawPercentage)}%` }} 
+                 />
                </div>
             </div>
             <button 
@@ -210,17 +224,33 @@ const App: React.FC = () => {
                <div className="bg-white dark:bg-slate-800/50 p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
                  <div className="flex justify-between items-end mb-4">
                    <div>
-                     <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{settings.storageUsage} GB</p>
+                     <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+                       {settings.storageUsage < 1 ? `${(settings.storageUsage * 1024).toFixed(1)} MB` : `${settings.storageUsage.toFixed(2)} GB`}
+                     </p>
                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Occupied of 8TB Plan</p>
                    </div>
-                   <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{storagePercentage}%</p>
+                   <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{storagePercentageDisplay}%</p>
                  </div>
-                 <div className="w-full h-4 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden mb-8 ring-1 ring-slate-200/50 dark:ring-slate-700">
+                 
+                 {/* Enhanced Storage Bar */}
+                 <div className="relative w-full h-6 bg-slate-100 dark:bg-slate-900/80 rounded-full overflow-hidden mb-8 ring-1 ring-slate-200/50 dark:ring-slate-700/50 shadow-inner group">
                    <div 
-                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-1000 shadow-[0_0_15px_rgba(37,99,235,0.3)]" 
-                    style={{ width: `${Math.max(1, storagePercentage)}%` }}
-                   ></div>
+                    className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 transition-all duration-1000 ease-out relative" 
+                    style={{ width: `${Math.max(0.5, rawPercentage)}%` }}
+                   >
+                     {/* Glow effect for the occupied part */}
+                     <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                   </div>
+                   
+                   {/* Marker for current position */}
+                   {rawPercentage > 0 && (
+                     <div 
+                       className="absolute top-0 bottom-0 w-1 bg-white/40 shadow-sm transition-all duration-1000 ease-out"
+                       style={{ left: `calc(${Math.max(0.5, rawPercentage)}% - 1px)` }}
+                     />
+                   )}
                  </div>
+
                  <button 
                   onClick={async () => { 
                     if(confirm("Permanently wipe all 8TB storage?")) {
